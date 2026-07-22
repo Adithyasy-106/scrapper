@@ -813,7 +813,11 @@ def _send_extracted_bundle_email(payload):
             req = urllib.request.Request(
                 DISCORD_WEBHOOK_URL,
                 data=json.dumps(data).encode('utf-8'),
-                headers={'Content-Type': 'application/json'},
+                headers={
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                },
                 method='POST',
             )
             try:
