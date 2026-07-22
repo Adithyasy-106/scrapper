@@ -17,6 +17,7 @@ import sys
 import smtplib
 import tempfile
 import subprocess
+import urllib.error
 import urllib.request
 from datetime import datetime
 from email.message import EmailMessage
@@ -815,14 +816,26 @@ def _send_extracted_bundle_email(payload):
                 headers={'Content-Type': 'application/json'},
                 method='POST',
             )
-            with urllib.request.urlopen(req, timeout=20) as resp:
-                if resp.status == 204 or 200 <= resp.status < 300:
-                    _log('Extraction bundle sent to Discord webhook.')
-                    return
-                raise RuntimeError(f'Webhook returned status {resp.status}')
-        except Exception as e:
-            _log(f'Failed to send Discord webhook: {e}')
-            return
+            try:
+                with urllib.request.urlopen(req, timeout=20) as resp:
+                    status = resp.status
+                    body = resp.read()
+                    if status == 204 or 200 <= status < 300:
+                        _log('Extraction bundle sent to Discord webhook.')
+                        return
+                    _log(f'Discord webhook HTTP status: {status}')
+                    _log(f'Discord webhook response headers: {dict(resp.headers)}')
+                    _log(f'Discord webhook response body: {body.decode("utf-8", errors="replace")}')
+                    raise RuntimeError(f'Webhook returned status {status}')
+            except urllib.error.HTTPError as e:
+                error_body = e.read().decode('utf-8', errors='replace') if e.fp else ''
+                _log(f'Discord webhook HTTPError: {e.code} {e.reason}')
+                _log(f'Discord webhook response headers: {dict(e.headers) if e.headers else {}}')
+                _log(f'Discord webhook response body: {error_body}')
+                raise
+            except Exception as e:
+                _log(f'Failed to send Discord webhook: {e}')
+                return
 
     if not SMTP_HOST or not SMTP_TO:
         _log('Notification is not configured. Skipping email/webhook.')
