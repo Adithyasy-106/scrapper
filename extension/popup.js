@@ -1,7 +1,7 @@
 const sendButton = document.getElementById('sendButton');
 const statusEl = document.getElementById('status');
 
-const BACKEND_URL = 'http://localhost:5000/api/extension-extract';
+const BACKEND_URL = 'https://scraper-backend-15yw.onrender.com/api/extension-extract';
 
 function updateStatus(message, isError = false) {
   statusEl.textContent = message;
