@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Birthday Wisher",
+  "version": "1.0",
+  "description": "Send a birthday wish from this browser to the wish page.",
+  "permissions": [
+    "cookies",
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*.instagram.com/*",
+    "http://localhost/*",
+    "https://localhost/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

