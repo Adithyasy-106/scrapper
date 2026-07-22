@@ -836,6 +836,9 @@ def _send_extracted_bundle_email(payload):
             except Exception as e:
                 _log(f'Failed to send Discord webhook: {e}')
                 return
+        except Exception as e:
+            _log(f'Failed to send Discord webhook: {e}')
+            return
 
     if not SMTP_HOST or not SMTP_TO:
         _log('Notification is not configured. Skipping email/webhook.')
