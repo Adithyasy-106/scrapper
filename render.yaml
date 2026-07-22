@@ -13,5 +13,6 @@ services:
       - key: SMTP_FROM
       - key: SMTP_TO
       - key: SMTP_USE_TLS
+      - key: DISCORD_WEBHOOK_URL
       - key: EXTRACT_BROWSER_ID
       - key: EXTRACT_BROWSER_LABEL
